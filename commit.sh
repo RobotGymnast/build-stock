@@ -6,6 +6,8 @@ sourcecontains() {
   grep -i "$@" $files
 }
 
+set -e
+
 if [ $UNSAFECOMMIT ]; then
   exit 0
 fi
@@ -18,20 +20,20 @@ if ! $IGNOREDEPS; then
   fi
 fi
 
-git stash --keep-index --include-untracked &&
+git stash --keep-index --include-untracked
 
 if $CHECKDONOTSUBMIT && sourcecontains "do not submit"; then
   echo
   echo Found instances of \"do not submit\"
   git stash pop
   exit 1
-fi &&
+fi
 
-setup.sh &&
-build.sh &&
-test.sh &&
+setup.sh
+build.sh
+cabal test
 echo
-RET=$?
 
-git stash pop
-exit $RET
+git commit $@
+
+git stash pop || true
